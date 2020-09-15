@@ -36,7 +36,7 @@ public class RsController {
         rsList.add(rsEvent);
     }
 
-    @PostMapping("rs/update/{index}")
+    @PostMapping("/rs/update/{index}")
     public void updateRsEvent(@RequestBody RsEvent rsEvent, @PathVariable int index) {
         if (rsEvent.getEventName() == null) {
             rsEvent.setEventName(rsList.get(index - 1).getEventName());
@@ -45,5 +45,10 @@ public class RsController {
             rsEvent.setKeyWord(rsList.get(index - 1).getKeyWord());
         }
         rsList.set(index - 1, rsEvent);
+    }
+
+    @GetMapping("/rs/delete/{index}")
+    public void deleteRsEvent(@PathVariable int index) {
+        rsList.remove(index - 1);
     }
 }

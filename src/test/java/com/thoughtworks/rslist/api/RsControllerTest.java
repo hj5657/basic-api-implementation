@@ -146,31 +146,11 @@ public class RsControllerTest {
     public void should_delete_rs_event_by_index() throws Exception {
         mockMvc.perform(get("/rs/delete/1")).andExpect(status().isOk());
         mockMvc.perform(get("/rs/1"))
-                .andExpect(jsonPath("$.eventName", is("第二条热搜")))
+                .andExpect(jsonPath("$.eventName", is("第二条事件")))
                 .andExpect(jsonPath("$.keyWord", is("无标签")))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/rs/2"))
-                .andExpect(jsonPath("$.eventName", is("第三条热搜")))
-                .andExpect(jsonPath("$.keyWord", is("无标签")))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/rs/delete/2")).andExpect(status().isOk());
-        mockMvc.perform(get("/rs/1"))
-                .andExpect(jsonPath("$.eventName", is("第一条热搜")))
-                .andExpect(jsonPath("$.keyWord", is("无标签")))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/2"))
-                .andExpect(jsonPath("$.eventName", is("第三条热搜")))
-                .andExpect(jsonPath("$.keyWord", is("无标签")))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/rs/delete/3")).andExpect(status().isOk());
-        mockMvc.perform(get("/rs/1"))
-                .andExpect(jsonPath("$.eventName", is("第一条热搜")))
-                .andExpect(jsonPath("$.keyWord", is("无标签")))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/2"))
-                .andExpect(jsonPath("$.eventName", is("第二条热搜")))
+                .andExpect(jsonPath("$.eventName", is("第三条事件")))
                 .andExpect(jsonPath("$.keyWord", is("无标签")))
                 .andExpect(status().isOk());
     }
