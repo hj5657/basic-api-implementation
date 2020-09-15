@@ -23,4 +23,13 @@ public class RsControllerTest {
         mockMvc.perform(get("/rs/list")).andExpect(content().string("[第一条事件, 第二条事件, 第三条事件]"))
                 .andExpect(status().isOk());
     }
+    @Test
+    public void should_return_one_rs() throws Exception {
+        mockMvc.perform(get("/rs/1")).andExpect(content().string("第一条事件"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/rs/2")).andExpect(content().string("第二条事件"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/rs/3")).andExpect(content().string("第三条事件"))
+                .andExpect(status().isOk());
+    }
 }
