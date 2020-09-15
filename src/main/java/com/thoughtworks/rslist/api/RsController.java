@@ -4,7 +4,6 @@ import com.thoughtworks.rslist.domain.RsEvent;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -35,5 +34,16 @@ public class RsController {
     @PostMapping("/rs/event")
     public void addRsEvent(@RequestBody RsEvent rsEvent) {
         rsList.add(rsEvent);
+    }
+
+    @PostMapping("rs/update/{index}")
+    public void updateRsEvent(@RequestBody RsEvent rsEvent, @PathVariable int index) {
+        if (rsEvent.getEventName() == null) {
+            rsEvent.setEventName(rsList.get(index - 1).getEventName());
+        }
+        if (rsEvent.getKeyWord() == null) {
+            rsEvent.setKeyWord(rsList.get(index - 1).getKeyWord());
+        }
+        rsList.set(index - 1, rsEvent);
     }
 }
