@@ -1,5 +1,6 @@
 package com.thoughtworks.rslist.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.RsEvent;
 import org.junit.jupiter.api.Test;
@@ -99,6 +100,44 @@ public class RsControllerTest {
                 .andExpect(jsonPath("$[2].keyWord",is("无标签")))
                 .andExpect(jsonPath("$[3].eventName",is("猪肉涨价了")))
                 .andExpect(jsonPath("$[3].keyWord",is("经济")))
+                .andExpect(status().isOk());
+    }
+    @Test
+    public void should_update_rs_event() throws Exception {
+        RsEvent rsEvent1 =new RsEvent();
+        RsEvent rsEvent2 =new RsEvent();
+        RsEvent rsEvent3 =new RsEvent("房价崩盘","经济");
+
+        rsEvent1.setEventName("基金涨疯了");
+        rsEvent2.setKeyWord("教育");
+
+        ObjectMapper objectMapper=new ObjectMapper();
+        String jsonString1 = objectMapper.writeValueAsString(rsEvent1);
+        String jsonString2 = objectMapper.writeValueAsString(rsEvent2);
+        String jsonString3 = objectMapper.writeValueAsString(rsEvent3);
+
+        mockMvc.perform(post("/rs/update/1").content(jsonString1)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/rs/1"))
+                .andExpect(jsonPath("$.eventName",is("基金涨疯了")))
+                .andExpect(jsonPath("$.keyWord",is("无标签")))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/rs/update/2").content(jsonString2)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/rs/2"))
+                .andExpect(jsonPath("$.eventName",is("第二条事件")))
+                .andExpect(jsonPath("$.keyWord",is("教育")))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/rs/update/3").content(jsonString3)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/rs/3"))
+                .andExpect(jsonPath("$.eventName",is("房价崩盘")))
+                .andExpect(jsonPath("$.keyWord",is("经济")))
                 .andExpect(status().isOk());
     }
 }
