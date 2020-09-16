@@ -1,12 +1,15 @@
 package com.thoughtworks.rslist.domain;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * Create by 木水 on 2020/9/15.
  */
 public class RsEvent {
+    @NotNull
     private String eventName;
+    @NotNull
     private String keyWord;
     @Valid
     private User user;

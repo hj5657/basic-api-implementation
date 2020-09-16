@@ -11,6 +11,13 @@ import java.util.List;
 @RestController
 public class RsController {
     private List<RsEvent> rsList = initAddRsEvent();
+    private List<User> userList = initAddUser();
+
+    private List<User> initAddUser() {
+        List<User> list = new ArrayList<>();
+        list.add(new User("hejie", 22, "male", "hj@c", "13599999999"));
+        return list;
+    }
 
     private List<RsEvent> initAddRsEvent() {
         List<RsEvent> list = new ArrayList<>();
@@ -19,11 +26,6 @@ public class RsController {
         list.add(new RsEvent("第二条事件", "无标签", user));
         list.add(new RsEvent("第三条事件", "无标签", user));
         return list;
-    }
-
-    @GetMapping("/init")
-    public void init() {
-        initAddRsEvent();
     }
 
     @GetMapping("/rs/{index}")
@@ -41,7 +43,22 @@ public class RsController {
 
     @PostMapping("/rs/event")
     public void addRsEvent(@RequestBody @Valid RsEvent rsEvent) {
-        rsList.add(rsEvent);
+        String userName = rsEvent.getUser().getUserName();
+        boolean hasUser = false;
+        for (User listUser : userList) {
+            String listUserName = listUser.getUserName();
+            if (userName.equals(listUserName)) {
+                hasUser = true;
+                rsEvent.setUser(listUser);
+                break;
+            }
+        }
+        if (hasUser) {
+            rsList.add(rsEvent);
+        } else {
+            userList.add(rsEvent.getUser());
+        }
+
     }
 
 }
