@@ -2,6 +2,7 @@ package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.exception.InvalidParamException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,15 +40,18 @@ public class RsController {
         if (start == null && end == null) {
             return ResponseEntity.ok(rsList);
         }
+        if (start <= 0 || end > rsList.size()) {
+            throw new InvalidParamException("invalid request param");
+        }
         return ResponseEntity.ok(rsList.subList(start - 1, end));
     }
 
     @PostMapping("/rs/event")
     public ResponseEntity addRsEvent(@RequestBody @Valid RsEvent rsEvent) {
-        String headerValue="";
+        String headerValue = "";
         rsList.add(rsEvent);
-        headerValue=String.valueOf(rsList.size()-1);
-        return ResponseEntity.created(null).header("index",headerValue).build();
+        headerValue = String.valueOf(rsList.size() - 1);
+        return ResponseEntity.created(null).header("index", headerValue).build();
     }
 
 }

@@ -131,4 +131,12 @@ public class RsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
+
+    @Order(6)
+    @Test
+    public void should_return_invalid_param_exception() throws Exception {
+        mockMvc.perform(get("/rs/list?start=1&end=5"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error",is("invalid request param")));
+    }
 }
