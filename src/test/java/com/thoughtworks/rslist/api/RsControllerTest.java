@@ -109,7 +109,24 @@ public class RsControllerTest {
                 .andExpect(jsonPath("$[2].keyWord", is("无标签")))
                 .andExpect(jsonPath("$[3].eventName", is("猪肉涨价了")))
                 .andExpect(jsonPath("$[3].keyWord", is("经济")))
+                .andExpect(jsonPath("$[3].user.userName",is("hejie")))
+                .andExpect(jsonPath("$[3].user.age",is(22)))
+                .andExpect(jsonPath("$[3].user.gender",is("male")))
+                .andExpect(jsonPath("$[3].user.email",is("hj@c")))
+                .andExpect(jsonPath("$[3].user.phone",is("13599999999")))
                 .andExpect(status().isOk());
+    }
+
+    @Order(5)
+    @Test
+    public void name_should_not_more_than_8_when_add_rs_event() throws Exception {
+        User user = new User("hejiehhhhh", 22, "male", "hj@c", "13599999999");
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济",user);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonString = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
 }
