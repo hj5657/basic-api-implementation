@@ -3,17 +3,19 @@ package com.thoughtworks.rslist.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.RsEvent;
-import org.junit.jupiter.api.Test;
+import org.assertj.core.internal.bytebuddy.implementation.bytecode.Throw;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -25,7 +27,10 @@ public class RsControllerTest {
 
     @Autowired
     MockMvc mockMvc;
-
+    @BeforeEach
+    public void setUp() throws Exception {
+        mockMvc.perform(get("/init"));
+    }
     @Test
     public void should_get_rs_list() throws Exception {
         mockMvc.perform(get("/rs/list"))
@@ -117,7 +122,7 @@ public class RsControllerTest {
         String jsonString2 = objectMapper.writeValueAsString(rsEvent2);
         String jsonString3 = objectMapper.writeValueAsString(rsEvent3);
 
-        mockMvc.perform(post("/rs/update/1").content(jsonString1)
+        mockMvc.perform(patch("/rs/update/1").content(jsonString1)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/rs/1"))
@@ -125,7 +130,7 @@ public class RsControllerTest {
                 .andExpect(jsonPath("$.keyWord", is("无标签")))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/rs/update/2").content(jsonString2)
+        mockMvc.perform(patch("/rs/update/2").content(jsonString2)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/rs/2"))
@@ -133,7 +138,7 @@ public class RsControllerTest {
                 .andExpect(jsonPath("$.keyWord", is("教育")))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/rs/update/3").content(jsonString3)
+        mockMvc.perform(patch("/rs/update/3").content(jsonString3)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/rs/3"))
@@ -144,7 +149,7 @@ public class RsControllerTest {
 
     @Test
     public void should_delete_rs_event_by_index() throws Exception {
-        mockMvc.perform(get("/rs/delete/1")).andExpect(status().isOk());
+        mockMvc.perform(delete("/rs/delete/1")).andExpect(status().isOk());
         mockMvc.perform(get("/rs/1"))
                 .andExpect(jsonPath("$.eventName", is("第二条事件")))
                 .andExpect(jsonPath("$.keyWord", is("无标签")))
@@ -154,4 +159,5 @@ public class RsControllerTest {
                 .andExpect(jsonPath("$.keyWord", is("无标签")))
                 .andExpect(status().isOk());
     }
+
 }

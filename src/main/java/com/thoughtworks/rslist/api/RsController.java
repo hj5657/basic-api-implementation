@@ -8,14 +8,18 @@ import java.util.List;
 
 @RestController
 public class RsController {
-    private List<RsEvent> rsList = initAddRsEvent();
+    private List<RsEvent> rsList = new ArrayList<>();
 
-    private List<RsEvent> initAddRsEvent() {
-        List<RsEvent> list = new ArrayList<>();
-        list.add(new RsEvent("第一条事件", "无标签"));
-        list.add(new RsEvent("第二条事件", "无标签"));
-        list.add(new RsEvent("第三条事件", "无标签"));
-        return list;
+    private void initAddRsEvent() {
+        rsList.clear();
+        rsList.add(new RsEvent("第一条事件", "无标签"));
+        rsList.add(new RsEvent("第二条事件", "无标签"));
+        rsList.add(new RsEvent("第三条事件", "无标签"));
+    }
+
+    @GetMapping("/init")
+    public void init() {
+        initAddRsEvent();
     }
 
     @GetMapping("/rs/{index}")
@@ -36,7 +40,7 @@ public class RsController {
         rsList.add(rsEvent);
     }
 
-    @PostMapping("/rs/update/{index}")
+    @PatchMapping("/rs/update/{index}")
     public void updateRsEvent(@RequestBody RsEvent rsEvent, @PathVariable int index) {
         if (rsEvent.getEventName() == null) {
             rsEvent.setEventName(rsList.get(index - 1).getEventName());
@@ -47,8 +51,11 @@ public class RsController {
         rsList.set(index - 1, rsEvent);
     }
 
-    @GetMapping("/rs/delete/{index}")
-    public void deleteRsEvent(@PathVariable int index) {
+    @DeleteMapping("/rs/delete/{index}")
+    public void deleteRsEvent(@PathVariable int index) throws IllegalAccessException {
+        if (index <= 0 || index > rsList.size()) {
+            throw new IllegalAccessException("你要删除的热搜不存在");
+        }
         rsList.remove(index - 1);
     }
 }
