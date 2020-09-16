@@ -18,14 +18,16 @@ import java.util.List;
 @RestController
 public class UserController {
     List<User> userList = new ArrayList<>();
+
     @PostMapping("/user")
-    public ResponseEntity addUser(@RequestBody @Valid User user){
+    public ResponseEntity addUser(@RequestBody @Valid User user) {
         userList.add(user);
-        return ResponseEntity.created(null).build();
+        String headerValue = String.valueOf(userList.size() - 1);
+        return ResponseEntity.created(null).header("index", headerValue).build();
     }
 
     @GetMapping("/user")
-    public ResponseEntity getUserList(){
+    public ResponseEntity getUserList() {
         return ResponseEntity.ok(userList);
     }
 }

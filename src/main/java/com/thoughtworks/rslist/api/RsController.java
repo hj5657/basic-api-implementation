@@ -44,22 +44,10 @@ public class RsController {
 
     @PostMapping("/rs/event")
     public ResponseEntity addRsEvent(@RequestBody @Valid RsEvent rsEvent) {
-        String userName = rsEvent.getUser().getUserName();
-        boolean hasUser = false;
-        for (User listUser : userList) {
-            String listUserName = listUser.getUserName();
-            if (userName.equals(listUserName)) {
-                hasUser = true;
-                rsEvent.setUser(listUser);
-                break;
-            }
-        }
-        if (hasUser) {
-            rsList.add(rsEvent);
-        } else {
-            userList.add(rsEvent.getUser());
-        }
-        return ResponseEntity.created(null).build();
+        String headerValue="";
+        rsList.add(rsEvent);
+        headerValue=String.valueOf(rsList.size()-1);
+        return ResponseEntity.created(null).header("index",headerValue).build();
     }
 
 }

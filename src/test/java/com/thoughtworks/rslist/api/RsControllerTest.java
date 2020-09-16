@@ -100,7 +100,8 @@ public class RsControllerTest {
         String jsonString = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(header().stringValues("index","3"));
         mockMvc.perform(get("/rs/list"))
                 .andExpect(jsonPath("$", hasSize(4)))
                 .andExpect(jsonPath("$[0].eventName", is("第一条事件")))
@@ -129,37 +130,5 @@ public class RsControllerTest {
         mockMvc.perform(post("/rs/event").content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Order(6)
-    @Test
-    public void should_add_user_when_username_is_not_same() throws Exception {
-        User user = new User("tianxin", 22, "male", "hj@c", "13599999999");
-        RsEvent rsEvent = new RsEvent("基金涨了", "经济",user);
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonString = objectMapper.writeValueAsString(rsEvent);
-        mockMvc.perform(post("/rs/event").content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
-
-        mockMvc.perform(get("/rs/list"))
-                .andExpect(jsonPath("$",hasSize(3)))
-                .andExpect(status().isOk());
-    }
-
-    @Order(7)
-    @Test
-    public void should_not_update_user_when_username_is_same() throws Exception {
-        User user = new User("hejie", 28, "male", "hj@c", "13599999999");
-        RsEvent rsEvent = new RsEvent("基金涨了", "经济",user);
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonString = objectMapper.writeValueAsString(rsEvent);
-        mockMvc.perform(post("/rs/event").content(jsonString)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
-
-        mockMvc.perform(get("/rs/4"))
-                .andExpect(jsonPath("$.user.age",is(22)))
-                .andExpect(status().isOk());
     }
 }
