@@ -38,7 +38,7 @@ public class UserControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().stringValues("index", "0"));
 
-        mockMvc.perform(get("/user"))
+        mockMvc.perform(get("/users"))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].userName", is("hejie")))
                 .andExpect(jsonPath("$[0].age", is(22)))
@@ -97,4 +97,6 @@ public class UserControllerTest {
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
+
+
 }
