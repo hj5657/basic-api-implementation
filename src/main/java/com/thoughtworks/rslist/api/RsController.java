@@ -2,6 +2,7 @@ package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -29,20 +30,20 @@ public class RsController {
     }
 
     @GetMapping("/rs/{index}")
-    public RsEvent getOneRs(@PathVariable Integer index) {
-        return rsList.get(index - 1);
+    public ResponseEntity getOneRs(@PathVariable Integer index) {
+        return ResponseEntity.ok(rsList.get(index - 1));
     }
 
     @GetMapping("/rs/list")
-    public List<RsEvent> getRsBetween(@RequestParam(required = false) Integer start, @RequestParam(required = false) Integer end) {
+    public ResponseEntity getRsBetween(@RequestParam(required = false) Integer start, @RequestParam(required = false) Integer end) {
         if (start == null && end == null) {
-            return rsList;
+            return ResponseEntity.ok(rsList);
         }
-        return rsList.subList(start - 1, end);
+        return ResponseEntity.ok(rsList.subList(start - 1, end));
     }
 
     @PostMapping("/rs/event")
-    public void addRsEvent(@RequestBody @Valid RsEvent rsEvent) {
+    public ResponseEntity addRsEvent(@RequestBody @Valid RsEvent rsEvent) {
         String userName = rsEvent.getUser().getUserName();
         boolean hasUser = false;
         for (User listUser : userList) {
@@ -58,7 +59,7 @@ public class RsController {
         } else {
             userList.add(rsEvent.getUser());
         }
-
+        return ResponseEntity.created(null).build();
     }
 
 }
