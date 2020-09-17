@@ -2,7 +2,9 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.po.RsEventPo;
 import com.thoughtworks.rslist.po.UserPo;
+import com.thoughtworks.rslist.repository.RsEventRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +32,8 @@ public class UserControllerTest {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    RsEventRepository rsEventRepository;
     @Autowired
     ObjectMapper objectMapper;
 
@@ -90,5 +94,18 @@ public class UserControllerTest {
 
         mockMvc.perform(get("/user/1")).andExpect(status().isBadRequest());
 
+    }
+
+    @Test
+    public void should_delete_user_both_delete_rs() throws Exception {
+        UserPo userPo = UserPo.builder().userName("ceshi").phone("18888888888").gender("male").email("a@b")
+                .age(19).build();
+        userRepository.save(userPo);
+        RsEventPo rsEventPo = RsEventPo.builder().eventName("股票账了").keyWord("财经").userPo(userPo).build();
+        rsEventRepository.save(rsEventPo);
+        mockMvc.perform(delete("/user/{id}", 1))
+                .andExpect(status().isOk());
+        Assertions.assertEquals(0,rsEventRepository.findAll().size());
+        Assertions.assertEquals(0,userRepository.findAll().size());
     }
 }

@@ -42,9 +42,9 @@ public class UserController {
         return ResponseEntity.ok(user.get());
     }
 
-    @DeleteMapping("/user/{index}")
-    public ResponseEntity deleteUserById(@PathVariable int index){
-        userRepository.deleteById(index);
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity deleteUserById(@PathVariable int id){
+        userRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
 }

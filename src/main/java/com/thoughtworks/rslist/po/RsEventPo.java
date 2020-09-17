@@ -5,10 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Create by 木水 on 2020/9/17.
@@ -25,5 +22,7 @@ public class RsEventPo {
     private int id;
     private String eventName;
     private String keyWord;
-    private int userId;
+
+    @ManyToOne
+    private UserPo userPo;
 }

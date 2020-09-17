@@ -5,10 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 /**
  * Create by 木水 on 2020/9/17.
@@ -30,4 +28,7 @@ public class UserPo {
     private String phone;
     @Builder.Default
     private int voteNum = 10;
+
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "userPo")
+    private List<RsEventPo> rsEventPos;
 }

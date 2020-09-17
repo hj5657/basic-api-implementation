@@ -47,11 +47,12 @@ public class RsController {
 
     @PostMapping("/rs/event")
     public ResponseEntity addRsEvent(@RequestBody @Valid RsEvent rsEvent) {
-        if (!userRepository.findById(rsEvent.getUserId()).isPresent()){
+        Optional<UserPo> userPo = userRepository.findById(rsEvent.getUserId());
+        if (!userPo.isPresent()){
             return ResponseEntity.badRequest().build();
         }
         RsEventPo rsEventPo = RsEventPo.builder().eventName(rsEvent.getEventName()).keyWord(rsEvent.getKeyWord())
-                .userId(rsEvent.getUserId()).build();
+                .userPo(userPo.get()).build();
         rsEventRepository.save(rsEventPo);
         return ResponseEntity.created(null).build();
     }

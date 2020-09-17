@@ -100,7 +100,7 @@ public class RsControllerTest {
         Assertions.assertEquals(1,rsEvents.size());
         Assertions.assertEquals("猪肉涨价了",rsEvents.get(0).getEventName());
         Assertions.assertEquals("经济",rsEvents.get(0).getKeyWord());
-        Assertions.assertEquals(saveUser.getId(),rsEvents.get(0).getUserId());
+        Assertions.assertEquals(saveUser.getId(),rsEvents.get(0).getUserPo().getId());
     }
 
     @Test
