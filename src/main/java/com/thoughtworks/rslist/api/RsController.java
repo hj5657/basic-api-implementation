@@ -4,58 +4,56 @@ import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
 import com.thoughtworks.rslist.exception.InvalidIndexException;
 import com.thoughtworks.rslist.exception.InvalidParamException;
+import com.thoughtworks.rslist.po.RsEventPo;
+import com.thoughtworks.rslist.po.UserPo;
+import com.thoughtworks.rslist.repository.RsEventRepository;
+import com.thoughtworks.rslist.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class RsController {
-    private List<RsEvent> rsList = initAddRsEvent();
-    private List<User> userList = initAddUser();
-
-    private List<User> initAddUser() {
-        List<User> list = new ArrayList<>();
-        list.add(new User("hejie", 22, "male", "hj@c", "13599999999"));
-        return list;
-    }
-
-    private List<RsEvent> initAddRsEvent() {
-        List<RsEvent> list = new ArrayList<>();
-        User user = new User("hejie", 22, "male", "hj@c", "13599999999");
-        list.add(new RsEvent("第一条事件", "无标签", user));
-        list.add(new RsEvent("第二条事件", "无标签", user));
-        list.add(new RsEvent("第三条事件", "无标签", user));
-        return list;
-    }
+    @Autowired
+    RsEventRepository rsEventRepository;
+    @Autowired
+    UserRepository userRepository;
 
     @GetMapping("/rs/{index}")
     public ResponseEntity getOneRs(@PathVariable Integer index) {
-        if (index<=0||index>rsList.size()){
+        List<RsEventPo> rsEvents = rsEventRepository.findAll();
+        if (index<=0||index>rsEvents.size()){
             throw new InvalidIndexException("invalid index");
         }
-        return ResponseEntity.ok(rsList.get(index - 1));
+        return ResponseEntity.ok(rsEvents.get(index - 1));
     }
 
     @GetMapping("/rs/list")
     public ResponseEntity getRsBetween(@RequestParam(required = false) Integer start, @RequestParam(required = false) Integer end) {
+        List<RsEventPo> rsEvents = rsEventRepository.findAll();
         if (start == null && end == null) {
-            return ResponseEntity.ok(rsList);
+            return ResponseEntity.ok(rsEvents);
         }
-        if (start <= 0 || end > rsList.size()) {
+        if (start <= 0 || end > rsEvents.size()) {
             throw new InvalidParamException("invalid request param");
         }
-        return ResponseEntity.ok(rsList.subList(start - 1, end));
+        return ResponseEntity.ok(rsEvents.subList(start - 1, end));
     }
 
     @PostMapping("/rs/event")
     public ResponseEntity addRsEvent(@RequestBody @Valid RsEvent rsEvent) {
-        String headerValue = "";
-        rsList.add(rsEvent);
-        headerValue = String.valueOf(rsList.size() - 1);
-        return ResponseEntity.created(null).header("index", headerValue).build();
+        if (!userRepository.findById(rsEvent.getUserId()).isPresent()){
+            return ResponseEntity.badRequest().build();
+        }
+        RsEventPo rsEventPo = RsEventPo.builder().eventName(rsEvent.getEventName()).keyWord(rsEvent.getKeyWord())
+                .userId(rsEvent.getUserId()).build();
+        rsEventRepository.save(rsEventPo);
+        return ResponseEntity.created(null).build();
     }
 
 }
