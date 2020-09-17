@@ -1,7 +1,9 @@
 package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.User;
-import org.springframework.http.HttpStatus;
+import com.thoughtworks.rslist.po.UserPo;
+import com.thoughtworks.rslist.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,11 +20,14 @@ import java.util.List;
 @RestController
 public class UserController {
     List<User> userList = new ArrayList<>();
-
+    @Autowired
+    UserRepository userRepository;
     @PostMapping("/user")
-    public ResponseEntity addUser(@RequestBody @Valid User user) {
-        userList.add(user);
-        String headerValue = String.valueOf(userList.size() - 1);
+    public ResponseEntity registerUser(@RequestBody @Valid User user) {
+        UserPo userPo = UserPo.builder().age(user.getAge()).email(user.getEmail()).gender(user.getGender())
+                .phone(user.getPhone()).userName(user.getUserName()).build();
+        userRepository.save(userPo);
+        String headerValue = String.valueOf(userRepository.findAll().size()-1);
         return ResponseEntity.created(null).header("index", headerValue).build();
     }
 
