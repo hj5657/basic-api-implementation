@@ -15,9 +15,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.core.Is.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Create by 木水 on 2020/9/16.
@@ -37,8 +37,7 @@ public class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
-        user = new User("hejie", 22, "male", "hj@c", "13599999999");
+        user = new User("hj", 23, "male", "tx@c", "15599999999");
     }
 
     @Test
@@ -46,11 +45,11 @@ public class UserControllerTest {
         String jsonString = objectMapper.writeValueAsString(user);
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(header().stringValues("index", "0"));
+                .andExpect(header().stringValues("index", "1"));
         List<UserPo> users = userRepository.findAll();
-        Assertions.assertEquals(1, users.size());
-        Assertions.assertEquals("hejie", users.get(0).getUserName());
-        Assertions.assertEquals(22, users.get(0).getAge());
+        Assertions.assertEquals(2, users.size());
+        Assertions.assertEquals("tianxin", users.get(0).getUserName());
+        Assertions.assertEquals(23, users.get(0).getAge());
 
     }
 
@@ -78,4 +77,18 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    public void should_get_user_by_id() throws Exception {
+        mockMvc.perform(get("/user/1")).andExpect(status().isOk())
+        .andExpect(jsonPath("$.userName",is("tianxin")))
+        .andExpect(jsonPath("$.age",is(23)));
+    }
+
+    @Test
+    public void should_delete_user_by_id() throws Exception {
+        mockMvc.perform(delete("/user/1")).andExpect(status().isOk());
+
+        mockMvc.perform(get("/user/1")).andExpect(status().isBadRequest());
+
+    }
 }
