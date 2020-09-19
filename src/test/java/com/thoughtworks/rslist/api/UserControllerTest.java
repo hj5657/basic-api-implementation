@@ -42,17 +42,18 @@ public class UserControllerTest {
     @BeforeEach
     void setUp() {
         user = new User("hj", 23, "male", "tx@c", "15599999999");
+        userRepository.deleteAll();
+        rsEventRepository.deleteAll();
     }
 
     @Test
     public void should_register_user() throws Exception {
         String jsonString = objectMapper.writeValueAsString(user);
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(header().stringValues("index", "1"));
+                .andExpect(status().isCreated());
         List<UserPo> users = userRepository.findAll();
-        Assertions.assertEquals(2, users.size());
-        Assertions.assertEquals("tianxin", users.get(0).getUserName());
+        Assertions.assertEquals(1, users.size());
+        Assertions.assertEquals("hj", users.get(0).getUserName());
         Assertions.assertEquals(23, users.get(0).getAge());
 
     }
@@ -83,16 +84,24 @@ public class UserControllerTest {
 
     @Test
     public void should_get_user_by_id() throws Exception {
-        mockMvc.perform(get("/user/1")).andExpect(status().isOk())
-        .andExpect(jsonPath("$.userName",is("tianxin")))
+        String jsonString = objectMapper.writeValueAsString(user);
+        mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+        int id=userRepository.findAll().get(0).getId();
+        mockMvc.perform(get("/user/"+id)).andExpect(status().isOk())
+        .andExpect(jsonPath("$.userName",is("hj")))
         .andExpect(jsonPath("$.age",is(23)));
     }
 
     @Test
     public void should_delete_user_by_id() throws Exception {
-        mockMvc.perform(delete("/user/1")).andExpect(status().isOk());
+        String jsonString = objectMapper.writeValueAsString(user);
+        mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+        int id=userRepository.findAll().get(0).getId();
+        mockMvc.perform(delete("/user/{id}",id)).andExpect(status().isOk());
 
-        mockMvc.perform(get("/user/1")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/user/{id}",id)).andExpect(status().isBadRequest());
 
     }
 

@@ -23,7 +23,7 @@ public class UserController {
         UserPo userPo = UserPo.builder().age(user.getAge()).email(user.getEmail()).gender(user.getGender())
                 .phone(user.getPhone()).userName(user.getUserName()).build();
         userRepository.save(userPo);
-        String headerValue = String.valueOf(userRepository.findAll().size()-1);
+        String headerValue = String.valueOf(userPo.getId());
         return ResponseEntity.created(null).header("index", headerValue).build();
     }
 
