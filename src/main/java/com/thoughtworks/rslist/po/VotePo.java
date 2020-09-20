@@ -6,24 +6,29 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 /**
- * Create by 木水 on 2020/9/17.
+ * Create by 木水 on 2020/9/20.
  */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
-@Table(name = "rsEvent")
-public class RsEventPo {
+@Table(name = "vote")
+public class VotePo {
     @Id
     @GeneratedValue
     private int id;
-    private String eventName;
-    private String keyWord;
+    private int num;
+    private LocalDateTime time;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserPo userPo;
+
+    @ManyToOne
+    @JoinColumn(name = "rs_event_id")
+    private RsEventPo rsEventPo;
 }
