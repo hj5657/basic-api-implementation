@@ -38,15 +38,9 @@ public class RsController {
     }
 
     @GetMapping("/rs/list")
-    public ResponseEntity getRsBetween(@RequestParam(required = false) Integer start, @RequestParam(required = false) Integer end) {
+    public ResponseEntity getRsList() {
         List<RsEventPo> rsEvents = rsEventRepository.findAll();
-        if (start == null && end == null) {
-            return ResponseEntity.ok(rsEvents);
-        }
-        if (start <= 0 || end > rsEvents.size()) {
-            throw new InvalidParamException("invalid request param");
-        }
-        return ResponseEntity.ok(rsEvents.subList(start - 1, end));
+        return ResponseEntity.ok(rsEvents);
     }
 
     @PostMapping("/rs/event")
@@ -89,8 +83,8 @@ public class RsController {
         VotePo votePo = VotePo.builder().num(voteNum).userPo(userPo.get())
                 .rsEventPo(rsEventPo.get()).time(LocalDateTime.now()).build();
         voteRepository.save(votePo);
-        userRepository.updateVoteById(userPo.get().getId(),totalVoteNum-voteNum);
-        rsEventRepository.updateVoteById(rsEventId,totalVoteNum-voteNum);
+        userRepository.updateVoteById(userPo.get().getId(), totalVoteNum - voteNum);
+        rsEventRepository.updateVoteById(rsEventId, totalVoteNum - voteNum);
         return ResponseEntity.ok().build();
     }
 }

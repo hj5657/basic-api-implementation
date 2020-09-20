@@ -42,8 +42,8 @@ public class UserControllerTest {
     @BeforeEach
     void setUp() {
         user = new User("hj", 23, "male", "tx@c", "15599999999");
-        userRepository.deleteAll();
         rsEventRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test

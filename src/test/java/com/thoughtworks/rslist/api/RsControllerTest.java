@@ -45,9 +45,9 @@ public class RsControllerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        userRepository.deleteAll();
-        rsEventRepository.deleteAll();
         voteRepository.deleteAll();
+        rsEventRepository.deleteAll();
+        userRepository.deleteAll();
         saveUser = UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
                 .userName("hejie").build();
         saveUser = userRepository.save(saveUser);
@@ -62,30 +62,13 @@ public class RsControllerTest {
 
     @Test
     void should_get_one_rs() throws Exception {
-        mockMvc.perform(get("/rs/1"))
-                .andExpect(jsonPath("$.eventName", is("第一条事件")))
-                .andExpect(jsonPath("$.keyWord", is("无标签")))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/2"))
-                .andExpect(jsonPath("$.eventName", is("第二条事件")))
-                .andExpect(jsonPath("$.keyWord", is("无标签")))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/3"))
-                .andExpect(jsonPath("$.eventName", is("第三条事件")))
-                .andExpect(jsonPath("$.keyWord", is("无标签")))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void should_get_rs_event_between() throws Exception {
-        mockMvc.perform(get("/rs/list?start=1&end=2"))
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].eventName", is("第一条事件")))
-                .andExpect(jsonPath("$[0].keyWord", is("无标签")))
-                .andExpect(jsonPath("$[1].eventName", is("第二条事件")))
-                .andExpect(jsonPath("$[1].keyWord", is("无标签")))
-                .andExpect(status().isOk());
-
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
+        String jsonString = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+        mockMvc.perform(get("/rs/100"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -111,14 +94,6 @@ public class RsControllerTest {
         mockMvc.perform(post("/rs/event").content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-    }
-
-
-    @Test
-    void should_return_invalid_param_exception() throws Exception {
-        mockMvc.perform(get("/rs/list?start=1&end=5"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("invalid request param")));
     }
 
     @Test
