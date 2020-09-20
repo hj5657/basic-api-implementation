@@ -1,10 +1,8 @@
 package com.thoughtworks.rslist.service;
 
+import com.thoughtworks.rslist.domain.User;
 import com.thoughtworks.rslist.po.UserPo;
-import com.thoughtworks.rslist.repository.RsEventRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
-import com.thoughtworks.rslist.repository.VoteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,10 +24,6 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
-    public void updateVoteById(int id, int voteNum) {
-        userRepository.updateVoteById(id,voteNum);
-    }
-
     public UserPo save(UserPo userPo) {
        return userRepository.save(userPo);
     }
@@ -44,5 +38,13 @@ public class UserService {
 
     public void deleteAll() {
         userRepository.deleteAll();
+    }
+
+    public String registerUser(User user) {
+        UserPo userPo = UserPo.builder().age(user.getAge()).email(user.getEmail()).gender(user.getGender())
+                .phone(user.getPhone()).userName(user.getUserName()).build();
+        userRepository.save(userPo);
+        String headerValue = String.valueOf(userPo.getId());
+        return headerValue;
     }
 }
