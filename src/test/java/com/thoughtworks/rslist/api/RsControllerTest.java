@@ -2,10 +2,13 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.RsEvent;
+import com.thoughtworks.rslist.domain.Vote;
 import com.thoughtworks.rslist.po.RsEventPo;
 import com.thoughtworks.rslist.po.UserPo;
+import com.thoughtworks.rslist.po.VotePo;
 import com.thoughtworks.rslist.repository.RsEventRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
+import com.thoughtworks.rslist.repository.VoteRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -34,12 +38,19 @@ public class RsControllerTest {
     UserRepository userRepository;
     @Autowired
     RsEventRepository rsEventRepository;
+    @Autowired
+    VoteRepository voteRepository;
+    UserPo saveUser;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
         userRepository.deleteAll();
         rsEventRepository.deleteAll();
+        voteRepository.deleteAll();
+        saveUser = UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
+                .userName("hejie").build();
+        saveUser = userRepository.save(saveUser);
     }
 
     @Test
@@ -79,8 +90,6 @@ public class RsControllerTest {
 
     @Test
     void should_add_rs_event_when_user_exist() throws Exception {
-        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
-                .userName("hejie").build());
         RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
         String jsonString = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(jsonString)
@@ -131,8 +140,6 @@ public class RsControllerTest {
 
     @Test
     void should_update_rs_event_when_user_id_format() throws Exception {
-        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
-                .userName("hejie").build());
         RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
         String jsonString = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(jsonString)
@@ -153,8 +160,6 @@ public class RsControllerTest {
 
     @Test
     void should_update_rs_event_only_eventName() throws Exception {
-        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
-                .userName("hejie").build());
         RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
         String jsonString = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(jsonString)
@@ -175,8 +180,6 @@ public class RsControllerTest {
 
     @Test
     void should_update_rs_event_only_keyWord() throws Exception {
-        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
-                .userName("hejie").build());
         RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
         String jsonString = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(jsonString)
@@ -196,8 +199,6 @@ public class RsControllerTest {
 
     @Test
     void should_return_bad_request_when_update_rs_event_of_not_format_user_id() throws Exception {
-        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
-                .userName("hejie").build());
         RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
         String jsonString = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(jsonString)
@@ -209,6 +210,40 @@ public class RsControllerTest {
         String newJsonString = objectMapper.writeValueAsString(newRsEvent);
         mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
                 .content(newJsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void vote_success_when_user_has_more_vote_num() throws Exception {
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
+        String jsonString = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        Vote vote = Vote.builder().userId(saveUser.getId()).voteNum(5).build();
+        String voteJsonString = objectMapper.writeValueAsString(vote);
+        int rsEventId = rsEventRepository.findAll().get(0).getId();
+        mockMvc.perform(post("/rs/vote/{rsEventId}",rsEventId).content(voteJsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        VotePo votePo = voteRepository.findAll().get(0);
+        Assertions.assertEquals(5,votePo.getNum());
+    }
+
+    @Test
+    void vote_fail_when_user_not_has_more_vote_num() throws Exception {
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
+        String jsonString = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        Vote vote = Vote.builder().userId(saveUser.getId()).voteNum(11).build();
+        String voteJsonString = objectMapper.writeValueAsString(vote);
+        int rsEventId = rsEventRepository.findAll().get(0).getId();
+        mockMvc.perform(post("/rs/vote/{rsEventId}",rsEventId).content(voteJsonString)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 }
