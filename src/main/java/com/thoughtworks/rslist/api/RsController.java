@@ -27,7 +27,7 @@ public class RsController {
     @GetMapping("/rs/{index}")
     public ResponseEntity getOneRs(@PathVariable Integer index) {
         List<RsEventPo> rsEvents = rsEventRepository.findAll();
-        if (index<=0||index>rsEvents.size()){
+        if (index <= 0 || index > rsEvents.size()) {
             throw new InvalidIndexException("invalid index");
         }
         return ResponseEntity.ok(rsEvents.get(index - 1));
@@ -48,7 +48,7 @@ public class RsController {
     @PostMapping("/rs/event")
     public ResponseEntity addRsEvent(@RequestBody @Valid RsEvent rsEvent) {
         Optional<UserPo> userPo = userRepository.findById(rsEvent.getUserId());
-        if (!userPo.isPresent()){
+        if (!userPo.isPresent()) {
             return ResponseEntity.badRequest().build();
         }
         RsEventPo rsEventPo = RsEventPo.builder().eventName(rsEvent.getEventName()).keyWord(rsEvent.getKeyWord())
@@ -57,4 +57,19 @@ public class RsController {
         return ResponseEntity.created(null).build();
     }
 
+    @PatchMapping("/rs/{rsEventId}")
+    public ResponseEntity updateRsEvent(@PathVariable int rsEventId, @RequestBody RsEvent rsEvent) {
+        Optional<RsEventPo> rsEventPo = rsEventRepository.findById(rsEventId);
+        if (!rsEventPo.isPresent() || rsEvent.getUserId() != rsEventPo.get().getUserPo().getId()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (rsEvent.getEventName() == null) {
+            rsEvent.setEventName(rsEventPo.get().getEventName());
+        }
+        if (rsEvent.getKeyWord() == null) {
+            rsEvent.setKeyWord(rsEventPo.get().getKeyWord());
+        }
+        rsEventRepository.updateEventNameAndKeyWordById(rsEventId, rsEvent.getEventName(), rsEvent.getKeyWord());
+        return ResponseEntity.ok().build();
+    }
 }

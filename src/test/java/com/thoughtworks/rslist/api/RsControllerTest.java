@@ -14,11 +14,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -36,29 +36,23 @@ public class RsControllerTest {
     UserRepository userRepository;
     @Autowired
     RsEventRepository rsEventRepository;
+
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
+        userRepository.deleteAll();
+        rsEventRepository.deleteAll();
     }
 
     @Test
-    public void should_get_rs_list() throws Exception {
+    void should_get_rs_list() throws Exception {
         mockMvc.perform(get("/rs/list"))
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].eventName", is("第一条事件")))
-                .andExpect(jsonPath("$[0].keyWord", is("无标签")))
-                .andExpect(jsonPath("$[0]", not(hasKey("user"))))
-                .andExpect(jsonPath("$[1].eventName", is("第二条事件")))
-                .andExpect(jsonPath("$[1].keyWord", is("无标签")))
-                .andExpect(jsonPath("$[1]", not(hasKey("user"))))
-                .andExpect(jsonPath("$[2].eventName", is("第三条事件")))
-                .andExpect(jsonPath("$[2].keyWord", is("无标签")))
-                .andExpect(jsonPath("$[2]", not(hasKey("user"))))
+                .andExpect(jsonPath("$", hasSize(0)))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void should_get_one_rs() throws Exception {
+    void should_get_one_rs() throws Exception {
         mockMvc.perform(get("/rs/1"))
                 .andExpect(jsonPath("$.eventName", is("第一条事件")))
                 .andExpect(jsonPath("$.keyWord", is("无标签")))
@@ -74,7 +68,7 @@ public class RsControllerTest {
     }
 
     @Test
-    public void should_get_rs_event_between() throws Exception {
+    void should_get_rs_event_between() throws Exception {
         mockMvc.perform(get("/rs/list?start=1&end=2"))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].eventName", is("第一条事件")))
@@ -86,7 +80,7 @@ public class RsControllerTest {
     }
 
     @Test
-    public void should_add_rs_event_when_user_exist() throws Exception {
+    void should_add_rs_event_when_user_exist() throws Exception {
         UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
                 .userName("hejie").build());
         RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
@@ -97,14 +91,14 @@ public class RsControllerTest {
 
         List<RsEventPo> rsEvents = rsEventRepository.findAll();
         Assertions.assertNotNull(rsEvents);
-        Assertions.assertEquals(1,rsEvents.size());
-        Assertions.assertEquals("猪肉涨价了",rsEvents.get(0).getEventName());
-        Assertions.assertEquals("经济",rsEvents.get(0).getKeyWord());
-        Assertions.assertEquals(saveUser.getId(),rsEvents.get(0).getUserPo().getId());
+        Assertions.assertEquals(1, rsEvents.size());
+        Assertions.assertEquals("猪肉涨价了", rsEvents.get(0).getEventName());
+        Assertions.assertEquals("经济", rsEvents.get(0).getKeyWord());
+        Assertions.assertEquals(saveUser.getId(), rsEvents.get(0).getUserPo().getId());
     }
 
     @Test
-    public void should_not_add_rs_event_when_user_not_exist() throws Exception {
+    void should_not_add_rs_event_when_user_not_exist() throws Exception {
         RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", 100);
         String jsonString = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(jsonString)
@@ -113,28 +107,110 @@ public class RsControllerTest {
     }
 
 
-
     @Test
-    public void should_return_invalid_param_exception() throws Exception {
+    void should_return_invalid_param_exception() throws Exception {
         mockMvc.perform(get("/rs/list?start=1&end=5"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid request param")));
     }
 
     @Test
-    public void should_return_invalid_index_exception() throws Exception {
+    void should_return_invalid_index_exception() throws Exception {
         mockMvc.perform(get("/rs/0"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid index")));
     }
 
     @Test
-    public void should_return_method_argument_not_valid_exception() throws Exception {
+    void should_return_method_argument_not_valid_exception() throws Exception {
         RsEvent rsEvent = new RsEvent(null, "经济", 2);
         String jsonString = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid param")));
+    }
+
+    @Test
+    void should_update_rs_event_when_user_id_format() throws Exception {
+        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
+                .userName("hejie").build());
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
+        String jsonString = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        RsEventPo rsEventPo = rsEventRepository.findAll().get(0);
+        RsEvent newRsEvent = new RsEvent("90后成长了", "怀旧", saveUser.getId());
+        String newJsonString = objectMapper.writeValueAsString(newRsEvent);
+        mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
+                .content(newJsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        RsEventPo newRsEventPo = rsEventRepository.findById(rsEventPo.getId()).get();
+        Assertions.assertEquals("90后成长了", newRsEventPo.getEventName());
+        Assertions.assertEquals("怀旧", newRsEventPo.getKeyWord());
+
+    }
+
+    @Test
+    void should_update_rs_event_only_eventName() throws Exception {
+        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
+                .userName("hejie").build());
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
+        String jsonString = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        RsEventPo rsEventPo = rsEventRepository.findAll().get(0);
+        RsEvent newRsEvent = new RsEvent("90后成长了", null, saveUser.getId());
+        String newJsonString = objectMapper.writeValueAsString(newRsEvent);
+        mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
+                .content(newJsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        RsEventPo newRsEventPo = rsEventRepository.findById(rsEventPo.getId()).get();
+        Assertions.assertEquals("90后成长了", newRsEventPo.getEventName());
+        Assertions.assertEquals("经济", newRsEventPo.getKeyWord());
+
+    }
+
+    @Test
+    void should_update_rs_event_only_keyWord() throws Exception {
+        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
+                .userName("hejie").build());
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
+        String jsonString = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        RsEventPo rsEventPo = rsEventRepository.findAll().get(0);
+        RsEvent newRsEvent = new RsEvent(null, "怀旧", saveUser.getId());
+        String newJsonString = objectMapper.writeValueAsString(newRsEvent);
+        mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
+                .content(newJsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        RsEventPo newRsEventPo = rsEventRepository.findById(rsEventPo.getId()).get();
+        Assertions.assertEquals("猪肉涨价了", newRsEventPo.getEventName());
+        Assertions.assertEquals("怀旧", newRsEventPo.getKeyWord());
+    }
+
+    @Test
+    void should_return_bad_request_when_update_rs_event_of_not_format_user_id() throws Exception {
+        UserPo saveUser = userRepository.save(UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
+                .userName("hejie").build());
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", saveUser.getId());
+        String jsonString = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        RsEventPo rsEventPo = rsEventRepository.findAll().get(0);
+        RsEvent newRsEvent = new RsEvent("90后成长了", "怀旧", 100);
+        String newJsonString = objectMapper.writeValueAsString(newRsEvent);
+        mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
+                .content(newJsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }
