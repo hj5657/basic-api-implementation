@@ -20,12 +20,16 @@ import java.util.Optional;
 
 @RestController
 public class RsController {
-    @Autowired
-    RsService rsService;
-    @Autowired
-    UserService userService;
-    @Autowired
-    VoteService voteService;
+
+    private RsService rsService;
+    private UserService userService;
+    private VoteService voteService;
+
+    public RsController(RsService rsService, UserService userService, VoteService voteService) {
+        this.rsService = rsService;
+        this.userService = userService;
+        this.voteService = voteService;
+    }
 
     @GetMapping("/rs/{id}")
     public ResponseEntity getOneRs(@PathVariable Integer id) {

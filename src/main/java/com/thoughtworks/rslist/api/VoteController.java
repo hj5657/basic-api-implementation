@@ -19,8 +19,11 @@ import java.util.stream.Collectors;
  */
 @RestController
 public class VoteController {
-    @Autowired
-    VoteService voteService;
+    private VoteService voteService;
+
+    public VoteController(VoteService voteService) {
+        this.voteService = voteService;
+    }
 
     @GetMapping("/voteRecord")
     public ResponseEntity getVoteRecord(@RequestParam int userId, @RequestParam int rsEventId,

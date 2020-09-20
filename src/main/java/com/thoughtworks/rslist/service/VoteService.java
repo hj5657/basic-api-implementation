@@ -16,12 +16,12 @@ import java.util.List;
  */
 @Service
 public class VoteService {
-    @Autowired
-    RsEventRepository rsEventRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    VoteRepository voteRepository;
+    private VoteRepository voteRepository;
+
+    public VoteService(VoteRepository voteRepository) {
+        this.voteRepository = voteRepository;
+    }
+
     public void save(VotePo votePo) {
         voteRepository.save(votePo);
     }

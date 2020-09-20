@@ -17,16 +17,16 @@ import java.util.Optional;
  */
 @Configuration
 public class RsService {
-    @Autowired
-    RsEventRepository rsEventRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    VoteRepository voteRepository;
+
+    private RsEventRepository rsEventRepository;
+
+    public RsService(RsEventRepository rsEventRepository) {
+        this.rsEventRepository = rsEventRepository;
+    }
 
     @Bean
     public RsService init(){
-        return new RsService();
+        return new RsService(rsEventRepository);
     }
     public Optional<RsEventPo> findById(Integer id) {
         return rsEventRepository.findById(id);

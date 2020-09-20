@@ -17,8 +17,12 @@ import java.util.Optional;
  */
 @RestController
 public class UserController {
-    @Autowired
-    UserService userService;
+    private UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping("/user")
     public ResponseEntity registerUser(@RequestBody @Valid User user) {
         UserPo userPo = UserPo.builder().age(user.getAge()).email(user.getEmail()).gender(user.getGender())

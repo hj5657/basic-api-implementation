@@ -15,12 +15,13 @@ import java.util.Optional;
  */
 @Service
 public class UserService {
-    @Autowired
-    RsEventRepository rsEventRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    VoteRepository voteRepository;
+
+    private UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public Optional<UserPo> findById(int userId) {
         return userRepository.findById(userId);
     }
