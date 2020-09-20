@@ -1,5 +1,6 @@
 package com.thoughtworks.rslist.po;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class VotePo {
     @GeneratedValue
     private int id;
     private int num;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime time;
 
     @ManyToOne

@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import java.time.LocalDateTime;
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -17,4 +19,7 @@ public interface VoteRepository extends PagingAndSortingRepository<VotePo,Intege
 
     @Query(value = "select * from vote where user_id =:userId and rs_event_id =:rsEventId",nativeQuery = true)
     List<VotePo> findByUserIdAndRsEventId(int userId, int rsEventId, Pageable pageable);
+
+    @Query(value = "select * from vote where time between :startTime and :endTime",nativeQuery = true)
+    List<VotePo> findBetweenTime(String startTime, String endTime);
 }
