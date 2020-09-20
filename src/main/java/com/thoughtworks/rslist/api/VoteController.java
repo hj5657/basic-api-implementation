@@ -2,6 +2,7 @@ package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.Vote;
 import com.thoughtworks.rslist.repository.VoteRepository;
+import com.thoughtworks.rslist.service.VoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +20,14 @@ import java.util.stream.Collectors;
 @RestController
 public class VoteController {
     @Autowired
-    VoteRepository voteRepository;
+    VoteService voteService;
 
     @GetMapping("/voteRecord")
     public ResponseEntity getVoteRecord(@RequestParam int userId, @RequestParam int rsEventId,
                                         @RequestParam int pageIndex) {
         Pageable pageable = PageRequest.of(pageIndex - 1, 5);
         return ResponseEntity.ok(
-                voteRepository.findByUserIdAndRsEventId(userId, rsEventId, pageable).stream().map(
+                voteService.findByUserIdAndRsEventId(userId, rsEventId, pageable).stream().map(
                         item -> Vote.builder().userId(item.getUserPo().getId())
                                 .rsEventId(item.getRsEventPo().getId())
                                 .voteNum(item.getNum()).time(item.getTime()).build()
@@ -38,7 +39,7 @@ public class VoteController {
                                               @RequestParam String endTime){
 
         return ResponseEntity.ok(
-          voteRepository.findBetweenTime(startTime, endTime).stream().map(
+          voteService.findBetweenTime(startTime, endTime).stream().map(
                   item -> Vote.builder().userId(item.getUserPo().getId())
                           .rsEventId(item.getRsEventPo().getId())
                           .voteNum(item.getNum()).time(item.getTime()).build()

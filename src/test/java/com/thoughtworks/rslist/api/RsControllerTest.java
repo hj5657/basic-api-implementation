@@ -9,6 +9,9 @@ import com.thoughtworks.rslist.po.VotePo;
 import com.thoughtworks.rslist.repository.RsEventRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
 import com.thoughtworks.rslist.repository.VoteRepository;
+import com.thoughtworks.rslist.service.RsService;
+import com.thoughtworks.rslist.service.UserService;
+import com.thoughtworks.rslist.service.VoteService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,22 +38,22 @@ public class RsControllerTest {
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
-    UserRepository userRepository;
+    UserService userService;
     @Autowired
-    RsEventRepository rsEventRepository;
+    RsService rsService;
     @Autowired
-    VoteRepository voteRepository;
-    UserPo saveUser;
+    VoteService voteService;
+    private UserPo saveUser;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        voteRepository.deleteAll();
-        rsEventRepository.deleteAll();
-        userRepository.deleteAll();
+        voteService.deleteAll();
+        rsService.deleteAll();
+        userService.deleteAll();
         saveUser = UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
                 .userName("hejie").build();
-        saveUser = userRepository.save(saveUser);
+        saveUser = userService.save(saveUser);
     }
 
     @Test
@@ -79,7 +82,7 @@ public class RsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        List<RsEventPo> rsEvents = rsEventRepository.findAll();
+        List<RsEventPo> rsEvents = rsService.findAll();
         Assertions.assertNotNull(rsEvents);
         Assertions.assertEquals(1, rsEvents.size());
         Assertions.assertEquals("猪肉涨价了", rsEvents.get(0).getEventName());
@@ -121,13 +124,13 @@ public class RsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        RsEventPo rsEventPo = rsEventRepository.findAll().get(0);
+        RsEventPo rsEventPo = rsService.findAll().get(0);
         RsEvent newRsEvent = new RsEvent("90后成长了", "怀旧", saveUser.getId());
         String newJsonString = objectMapper.writeValueAsString(newRsEvent);
         mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
                 .content(newJsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        RsEventPo newRsEventPo = rsEventRepository.findById(rsEventPo.getId()).get();
+        RsEventPo newRsEventPo = rsService.findById(rsEventPo.getId()).get();
         Assertions.assertEquals("90后成长了", newRsEventPo.getEventName());
         Assertions.assertEquals("怀旧", newRsEventPo.getKeyWord());
 
@@ -141,13 +144,13 @@ public class RsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        RsEventPo rsEventPo = rsEventRepository.findAll().get(0);
+        RsEventPo rsEventPo = rsService.findAll().get(0);
         RsEvent newRsEvent = new RsEvent("90后成长了", null, saveUser.getId());
         String newJsonString = objectMapper.writeValueAsString(newRsEvent);
         mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
                 .content(newJsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        RsEventPo newRsEventPo = rsEventRepository.findById(rsEventPo.getId()).get();
+        RsEventPo newRsEventPo = rsService.findById(rsEventPo.getId()).get();
         Assertions.assertEquals("90后成长了", newRsEventPo.getEventName());
         Assertions.assertEquals("经济", newRsEventPo.getKeyWord());
 
@@ -161,13 +164,13 @@ public class RsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        RsEventPo rsEventPo = rsEventRepository.findAll().get(0);
+        RsEventPo rsEventPo = rsService.findAll().get(0);
         RsEvent newRsEvent = new RsEvent(null, "怀旧", saveUser.getId());
         String newJsonString = objectMapper.writeValueAsString(newRsEvent);
         mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
                 .content(newJsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        RsEventPo newRsEventPo = rsEventRepository.findById(rsEventPo.getId()).get();
+        RsEventPo newRsEventPo = rsService.findById(rsEventPo.getId()).get();
         Assertions.assertEquals("猪肉涨价了", newRsEventPo.getEventName());
         Assertions.assertEquals("怀旧", newRsEventPo.getKeyWord());
     }
@@ -180,7 +183,7 @@ public class RsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        RsEventPo rsEventPo = rsEventRepository.findAll().get(0);
+        RsEventPo rsEventPo = rsService.findAll().get(0);
         RsEvent newRsEvent = new RsEvent("90后成长了", "怀旧", 100);
         String newJsonString = objectMapper.writeValueAsString(newRsEvent);
         mockMvc.perform(patch("/rs/{rsEventId}", rsEventPo.getId())
@@ -198,11 +201,11 @@ public class RsControllerTest {
 
         Vote vote = Vote.builder().userId(saveUser.getId()).voteNum(5).build();
         String voteJsonString = objectMapper.writeValueAsString(vote);
-        int rsEventId = rsEventRepository.findAll().get(0).getId();
+        int rsEventId = rsService.findAll().get(0).getId();
         mockMvc.perform(post("/rs/vote/{rsEventId}",rsEventId).content(voteJsonString)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        VotePo votePo = voteRepository.findAll().get(0);
+        VotePo votePo = voteService.findAll().get(0);
         Assertions.assertEquals(5,votePo.getNum());
     }
 
@@ -216,7 +219,7 @@ public class RsControllerTest {
 
         Vote vote = Vote.builder().userId(saveUser.getId()).voteNum(11).build();
         String voteJsonString = objectMapper.writeValueAsString(vote);
-        int rsEventId = rsEventRepository.findAll().get(0).getId();
+        int rsEventId = rsService.findAll().get(0).getId();
         mockMvc.perform(post("/rs/vote/{rsEventId}",rsEventId).content(voteJsonString)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());

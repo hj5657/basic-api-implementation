@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.User;
 import com.thoughtworks.rslist.po.RsEventPo;
 import com.thoughtworks.rslist.po.UserPo;
-import com.thoughtworks.rslist.repository.RsEventRepository;
-import com.thoughtworks.rslist.repository.UserRepository;
+import com.thoughtworks.rslist.service.RsService;
+import com.thoughtworks.rslist.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,9 +31,9 @@ public class UserControllerTest {
     MockMvc mockMvc;
 
     @Autowired
-    UserRepository userRepository;
+    UserService userService;
     @Autowired
-    RsEventRepository rsEventRepository;
+    RsService rsService;
     @Autowired
     ObjectMapper objectMapper;
 
@@ -42,8 +42,8 @@ public class UserControllerTest {
     @BeforeEach
     void setUp() {
         user = new User("hj", 23, "male", "tx@c", "15599999999");
-        rsEventRepository.deleteAll();
-        userRepository.deleteAll();
+        rsService.deleteAll();
+        userService.deleteAll();
     }
 
     @Test
@@ -51,7 +51,7 @@ public class UserControllerTest {
         String jsonString = objectMapper.writeValueAsString(user);
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
-        List<UserPo> users = userRepository.findAll();
+        List<UserPo> users = userService.findAll();
         Assertions.assertEquals(1, users.size());
         Assertions.assertEquals("hj", users.get(0).getUserName());
         Assertions.assertEquals(23, users.get(0).getAge());
@@ -87,7 +87,7 @@ public class UserControllerTest {
         String jsonString = objectMapper.writeValueAsString(user);
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
-        int id=userRepository.findAll().get(0).getId();
+        int id= userService.findAll().get(0).getId();
         mockMvc.perform(get("/user/"+id)).andExpect(status().isOk())
         .andExpect(jsonPath("$.userName",is("hj")))
         .andExpect(jsonPath("$.age",is(23)));
@@ -98,7 +98,7 @@ public class UserControllerTest {
         String jsonString = objectMapper.writeValueAsString(user);
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
-        int id=userRepository.findAll().get(0).getId();
+        int id= userService.findAll().get(0).getId();
         mockMvc.perform(delete("/user/{id}",id)).andExpect(status().isOk());
 
         mockMvc.perform(get("/user/{id}",id)).andExpect(status().isBadRequest());
@@ -109,12 +109,12 @@ public class UserControllerTest {
     public void should_delete_user_both_delete_rs() throws Exception {
         UserPo userPo = UserPo.builder().userName("ceshi").phone("18888888888").gender("male").email("a@b")
                 .age(19).build();
-        userRepository.save(userPo);
+        userService.save(userPo);
         RsEventPo rsEventPo = RsEventPo.builder().eventName("股票账了").keyWord("财经").userPo(userPo).build();
-        rsEventRepository.save(rsEventPo);
+        rsService.save(rsEventPo);
         mockMvc.perform(delete("/user/{id}", 1))
                 .andExpect(status().isOk());
-        Assertions.assertEquals(0,rsEventRepository.findAll().size());
-        Assertions.assertEquals(0,userRepository.findAll().size());
+        Assertions.assertEquals(0, rsService.findAll().size());
+        Assertions.assertEquals(0, userService.findAll().size());
     }
 }

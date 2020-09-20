@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.po.RsEventPo;
 import com.thoughtworks.rslist.po.UserPo;
 import com.thoughtworks.rslist.po.VotePo;
-import com.thoughtworks.rslist.repository.RsEventRepository;
-import com.thoughtworks.rslist.repository.UserRepository;
-import com.thoughtworks.rslist.repository.VoteRepository;
+import com.thoughtworks.rslist.service.RsService;
+import com.thoughtworks.rslist.service.UserService;
+import com.thoughtworks.rslist.service.VoteService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,25 +31,25 @@ class VoteControllerTest {
     @Autowired
     ObjectMapper objectMapper;
     @Autowired
-    UserRepository userRepository;
+    UserService userService;
     @Autowired
-    RsEventRepository rsEventRepository;
+    RsService rsService;
     @Autowired
-    VoteRepository voteRepository;
-    UserPo saveUser;
-    RsEventPo rsEventPo;
+    VoteService voteService;
+    private UserPo saveUser;
+    private RsEventPo rsEventPo;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        voteRepository.deleteAll();
-        rsEventRepository.deleteAll();
-        userRepository.deleteAll();
+        voteService.deleteAll();
+        rsService.deleteAll();
+        userService.deleteAll();
         saveUser = UserPo.builder().age(22).email("hj@c").gender("male").phone("13599999999")
                 .userName("hejie").build();
-        saveUser = userRepository.save(saveUser);
+        saveUser = userService.save(saveUser);
         rsEventPo = RsEventPo.builder().eventName("基金涨了").keyWord("经济").voteNum(0).build();
-        rsEventPo = rsEventRepository.save(rsEventPo);
+        rsEventPo = rsService.save(rsEventPo);
     }
 
     @Test
@@ -58,7 +57,7 @@ class VoteControllerTest {
         for (int i = 0; i < 8; i++) {
             VotePo votePo = VotePo.builder().userPo(saveUser).rsEventPo(rsEventPo)
                     .time(LocalDateTime.now()).num(i + 1).build();
-            voteRepository.save(votePo);
+            voteService.save(votePo);
         }
 
         mockMvc.perform(get("/voteRecord").param("userId", String.valueOf(saveUser.getId()))
@@ -92,7 +91,7 @@ class VoteControllerTest {
         for (int i = 0; i < 8; i++) {
             VotePo votePo = VotePo.builder().userPo(saveUser).rsEventPo(rsEventPo)
                     .time(LocalDateTime.now().plusHours(i)).num(i + 1).build();
-            voteRepository.save(votePo);
+            voteService.save(votePo);
         }
         String endTime = String.valueOf(LocalDateTime.now().plusHours(5));
         mockMvc.perform(get("/vote/timeList").param("startTime", startTime)
