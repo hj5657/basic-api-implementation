@@ -5,6 +5,8 @@ import com.thoughtworks.rslist.repository.RsEventRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
 import com.thoughtworks.rslist.repository.VoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.Optional;
 /**
  * Create by 木水 on 2020/9/20.
  */
-@Service
+@Configuration
 public class RsService {
     @Autowired
     RsEventRepository rsEventRepository;
@@ -22,6 +24,10 @@ public class RsService {
     @Autowired
     VoteRepository voteRepository;
 
+    @Bean
+    public RsService init(){
+        return new RsService();
+    }
     public Optional<RsEventPo> findById(Integer id) {
         return rsEventRepository.findById(id);
     }
